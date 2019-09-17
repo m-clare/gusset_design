@@ -72,4 +72,5 @@ class GussetPlate(object):
     # utilize geometric limits
 
 if __name__ == "__main__":
+    pass
 

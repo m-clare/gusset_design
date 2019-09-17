@@ -31,6 +31,9 @@ class GussetNode(StructuralNode):
         pass
 
     def check_gusset_compatibility():
+        '''
+        Check thickness of top and bottom gusset framing into column and take largest thickness
+        '''
         pass
 
 if __name__ == "__main__":
