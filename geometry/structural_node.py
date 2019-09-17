@@ -14,18 +14,13 @@ class StructuralNode(object):
         self.z = z
         self.planes = planes
 
-    def get_e_c(column_depth):
-    	return 0.5 * column_depth
-    	pass
+    def from_json():
+        pass
 
-    def get_e_b(beam_depth):
-    	pass
+    def to_json():
+        pass
 
-    def get_horizontal_gusset_force():
-    	pass
-
-    def
-
+    
 
 if __name__ == "__main__":
     test = StructuralNode(x=1.0, y=1.0, z=1.0)

@@ -30,3 +30,12 @@
 ### Design Guide Notes
 - KISS Method - all vertical force goes to column/gusset interface, all horizontal force goes to beam/gusset interface - not the most economical
 - Parallel Force Method - 
+- Uniform Force Method
+
+### Geometric Constraints
+- 3 Force Polygons
+- alpha and beta are unknowns
+- beam control point is fixed (x, y)
+- H is known and line of action for H is known
+- P is known and line of action for P is known
+- V is known and line of action for V is known
