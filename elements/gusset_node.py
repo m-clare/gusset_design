@@ -14,13 +14,15 @@ class GussetNode(StructuralNode):
     def __init__(self):
         super(GussetNode, self).__init__()
 
+    @classmethod
     def from_json():
         pass
 
+    @classmethod
     def to_json():
         pass
 
-    def add_gusset():
+    def add_gusset(self, gussetPlate):
         pass
 
     def check_connection_framing_compatibility():

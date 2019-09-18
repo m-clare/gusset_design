@@ -32,7 +32,14 @@
 - Parallel Force Method - 
 - Uniform Force Method
 
-### Geometric Constraints
+### Geometric Constraints - Gusset Plates
+- 3 inch offset for edge of gusset from column
+- 3 inch offset for edge of gusset from beam
+- 2 inch offset from column to brace connection
+- 6 inch offset from beam to brace connection
+- 3 inch offset either side of brace (shoulder)
+
+### Geometric Constraints - Forces
 - 3 Force Polygons
 - alpha and beta are unknowns
 - beam control point is fixed (x, y)

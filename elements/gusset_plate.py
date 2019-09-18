@@ -1,5 +1,6 @@
 from numpy import tan
 from numpy import radians
+from numpy import array
 
 __author__ = ['Maryanne Wachter', ]
 __license__ = 'Apache License, Version 2.0'
@@ -11,8 +12,10 @@ __date__ = 'Sept 16, 2019'
 
 class GussetPlate(object):
 
-    def __init__(self, quadrant, width, height, brace_angle, brace,
-                 column, column_orientation, beam):
+    def __init__(self, quadrant, width, height,
+                 brace, brace_orientation, brace_angle,
+                 column, column_orientation,
+                 beam):
         self._quadrant = quadrant
         self._brace_angle = brace_angle
         self._brace = brace
@@ -23,6 +26,14 @@ class GussetPlate(object):
         self._height = height
 
     # Properties
+
+    @property
+    def width(self):
+        return self._width
+
+    @property
+    def height(self):
+        return self._height
 
     @property
     def brace_angle(self):
@@ -115,6 +126,43 @@ class GussetPlate(object):
                    (self.beta + self.eb) ** 2.) ** 0.5
         return self._r
 
+    # Gusset geometry points
+
+    @property
+    def pt0(self):
+        self._pt0 = array([self.eb, self.ec])
+        return self._pt0
+
+    @property
+    def pt1(self):
+        self._pt1 = self.pt0 + array([self.width, 0])
+        return self._pt1
+
+    @property
+    def pt2(self):
+        offset = 3.  # get rid of hardcoding
+        self._pt2 = self.pt1 + array([0, offset])
+        return self._pt2
+
+    @property
+    def pt3(self):
+        pass
+
+    @property
+    def pt4(self):
+        pass
+
+    @property
+    def pt5(self):
+        self._pt5 = self.pt0 + array([0, self.height])
+        return self._pt5
+
+    @property
+    def pt6(self):
+        offset = 3  # get rid of hardcoding
+        self._pt6 = self.pt0 + array([0, offset])
+        return self._pt6
+
     # Methods
     def calculate_column_interface_forces(self, brace_force, as_dict=False):
         V_c = self.beta * brace_force / self.r
@@ -140,7 +188,8 @@ class GussetPlate(object):
                     'V_b': V_b, 'H_b': H_b, 'M_b': M_b}
         return V_c, H_c, M_c, V_b, H_b, M_b
 
-    # utilize geometric limits
+
+
 
 if __name__ == "__main__":
     pass
