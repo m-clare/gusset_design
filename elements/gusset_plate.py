@@ -1,6 +1,8 @@
 from numpy import tan
 from numpy import radians
-from numpy import array
+from sympy import Point2D
+from sympy import Line2D
+from sympy import Ray
 
 __author__ = ['Maryanne Wachter', ]
 __license__ = 'Apache License, Version 2.0'
@@ -24,6 +26,7 @@ class GussetPlate(object):
         self._beam = beam
         self._width = width
         self._height = height
+        self._offset = offset
 
     # Properties
 
@@ -130,22 +133,23 @@ class GussetPlate(object):
 
     @property
     def pt0(self):
-        self._pt0 = array([self.eb, self.ec])
+        self._pt0 = Point2D(self.eb, self.ec, evaluate=False)
         return self._pt0
 
     @property
     def pt1(self):
-        self._pt1 = self.pt0 + array([self.width, 0])
+        self._pt1 = (self.pt0.translate(self.width, 0)).evalf()
         return self._pt1
 
     @property
     def pt2(self):
         offset = 3.  # get rid of hardcoding
-        self._pt2 = self.pt1 + array([0, offset])
+        self._pt2 = self.pt1.translate(0, offset).evalf()
         return self._pt2
 
     @property
     def pt3(self):
+        testray = Ray()
         pass
 
     @property
@@ -154,13 +158,13 @@ class GussetPlate(object):
 
     @property
     def pt5(self):
-        self._pt5 = self.pt0 + array([0, self.height])
+        self._pt5 = self.pt0.translate(0, self.height).evalf()
         return self._pt5
 
     @property
     def pt6(self):
         offset = 3  # get rid of hardcoding
-        self._pt6 = self.pt0 + array([0, offset])
+        self._pt6 = self.pt0.translate(0, offset).evalf()
         return self._pt6
 
     # Methods
@@ -187,6 +191,9 @@ class GussetPlate(object):
             return {'V_c': V_c, 'H_c': H_c, 'M_c': M_c,
                     'V_b': V_b, 'H_b': H_b, 'M_b': M_b}
         return V_c, H_c, M_c, V_b, H_b, M_b
+
+    def to_mesh(self, plane, normal):
+        pass
 
 
 

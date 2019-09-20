@@ -11,4 +11,6 @@ gusset = GussetPlate('i', 24.5, 28., brace, 'strong axis', 42.3, column, 'strong
 print(gusset.__dict__)
 print(gusset.r)
 force = gusset.calculate_interface_forces(861, as_dict=True)
-print(gusset.pt6)
+print(gusset.pt5)
+print(gusset.pt1)
+print(gusset.pt0)
