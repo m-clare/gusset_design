@@ -1,5 +1,13 @@
 from numpy import tan
+from numpy import sin
+from numpy import cos
 from numpy import radians
+from compas.geometry import Point
+from compas.geometry import Line
+from compas.geometry import Vector
+from compas.geometry import angle_points
+from compas.geometry import translate_points_xy
+from compas.geometry import offset_line
 from sympy import Point2D
 from sympy import Line2D
 from sympy import Ray
@@ -15,18 +23,19 @@ __date__ = 'Sept 16, 2019'
 class GussetPlate(object):
 
     def __init__(self, quadrant, width, height,
-                 brace, brace_orientation, brace_angle,
-                 column, column_orientation,
+                 connection_length,
+                 brace,
+                 column,
                  beam):
         self._quadrant = quadrant
-        self._brace_angle = brace_angle
+        self._work_point = [0, 0, 0]
         self._brace = brace
         self._column = column
-        self._column_orientation = column_orientation
         self._beam = beam
         self._width = width
         self._height = height
-        self._offset = offset
+        self._offset = 3.
+        self._brace_CL = None
 
     # Properties
 
@@ -39,20 +48,35 @@ class GussetPlate(object):
         return self._height
 
     @property
-    def brace_angle(self):
-        return self._brace_angle
-
-    @brace_angle.setter
-    def set_brace_angle(self, value):
-        self._brace_angle = value
+    def brace(self):
+        return self._brace
 
     @property
-    def column_orientation(self):
-        return self._column_orientation
+    def column(self):
+        return self._column
 
-    @column_orientation.setter
-    def set_column_orientation(self, value):
-        self._column_orientation = value
+    @property
+    def beam(self):
+        return self._beam
+
+    @property
+    def work_point(self):
+        return self._work_point
+
+    @property
+    def offset(self):
+        return self._offset
+    
+    # @offset.setter
+    # def(self, value):
+    #     self._offset = value
+    #     return self._offset
+
+    @property
+    def brace_angle(self):
+        angle = angle_points(self.column.end_pt, self.work_point, self.brace.end_pt, deg=True)
+        self._brace_angle = angle
+        return self._brace_angle
 
     @property
     def design_angle(self):
@@ -68,29 +92,29 @@ class GussetPlate(object):
         return self._design_angle
 
     @property
-    def eb(self):  # NEED TO ADD designTION FOR SETTING eb in definition
+    def eb(self):  # NEED TO ADD DESIGNATION FOR SETTING EB at START? IF WORKPOINT IS NOT AT CL OF BEAM
         if self._beam.Type == 'HSS':
-            self._eb = self._beam.Ht * 0.5
+            self._eb = self.beam.Ht * 0.5
         else:
-            self._eb = self._beam.d * 0.5
+            self._eb = self.beam.d * 0.5
         return self._eb
 
     @property
     def ec(self):
-        if self.column_orientation == 'strong axis':
-            self._ec = self._column.d * 0.5
-        if self.column_orientation == 'weak axis':
-            self._ec = self._column.bf * 0.5
+        if self.column.orientation == 'strong-axis':
+            self._ec = self.column.d * 0.5
+        if self.column.orientation == 'weak-axis':
+            self._ec = self.column.bf * 0.5
         return self._ec
 
     @property
     def beta_bar(self):
-        self._beta_bar = self._height * 0.5
+        self._beta_bar = self.height * 0.5
         return self._beta_bar
 
     @property
     def alpha_bar(self):
-        self._alpha_bar = self._width * 0.5
+        self._alpha_bar = self.width * 0.5
         return self._alpha_bar
 
     @property
@@ -131,41 +155,32 @@ class GussetPlate(object):
 
     # Gusset geometry points
 
-    @property
-    def pt0(self):
-        self._pt0 = Point2D(self.eb, self.ec, evaluate=False)
-        return self._pt0
+    def get_gusset_points(self, as_dict=True):
+        pt0 = list(Point(self.eb, self.ec))
+        pt1 = translate_points_xy([pt0], Vector(self.width, 0, 0))[0]
+        pt2 = translate_points_xy([pt1], Vector(0, self.offset, 0))[0]
+        pt6 = translate_points_xy([pt0], Vector(0, self.height, 0))[0]
+        pt5 = translate_points_xy([pt6], Vector(self.offset, 0, 0))[0]
 
-    @property
-    def pt1(self):
-        self._pt1 = (self.pt0.translate(self.width, 0)).evalf()
-        return self._pt1
-
-    @property
-    def pt2(self):
-        offset = 3.  # get rid of hardcoding
-        self._pt2 = self.pt1.translate(0, offset).evalf()
-        return self._pt2
-
-    @property
-    def pt3(self):
-        testray = Ray()
-        pass
-
-    @property
-    def pt4(self):
-        pass
-
-    @property
-    def pt5(self):
-        self._pt5 = self.pt0.translate(0, self.height).evalf()
-        return self._pt5
-
-    @property
-    def pt6(self):
-        offset = 3  # get rid of hardcoding
-        self._pt6 = self.pt0.translate(0, offset).evalf()
-        return self._pt6
+        # Brace CL
+        brace_vector = Vector(sin(radians(self.design_angle)),
+                              cos(radians(self.design_angle)), 0)
+        brace_vector.unitize()
+        brace_vector.scale(200)
+        brace_pt = translate_points_xy([self.work_point], brace_vector)[0]
+        brace_CL = Line(self.work_point, brace_pt)
+        offset_bcl_column = offset_line(brace_CL, self.brace.d * 0.5)
+        offset_bcl_beam = offset_line(brace_CL, -self.brace.d * 0.5)
+        print(offset_bcl_column)
+        print(offset_bcl_beam)
+        pt3 = [0, 0, 0]
+        pt4 = [1, 0, 0]
+        if as_dict:
+            return {'pt0': pt0, 'pt1': pt1, 'pt2': pt2, 'pt3': pt3,
+                    'pt4': pt4, 'pt5': pt5, 'pt6': pt6}
+        else:
+            raise NotImplementedError
+        # return self._gusset_points
 
     # Methods
     def calculate_column_interface_forces(self, brace_force, as_dict=False):

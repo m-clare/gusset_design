@@ -4,10 +4,16 @@ from gusset_design.visualization.mesh import PlateMesh
 import plotly.graph_objects as go
 
 aisc_db = AISCShapesDatabase.from_json('../reference/aisc_shapes_database_v15.json')
-w40x593 = SteelMember.from_AISC_database(section_name="W40X593", AISCDatabase=aisc_db)
+w40x593 = SteelMember.from_AISC_database(section_name="W18X55", AISCDatabase=aisc_db)
 test = w40x593.x_section_to_mesh('xz', 10*12)
+test2 = w40x593.x_section_to_mesh('xy', 10*12)
 test_mesh_info = []
 for part in test:
+    print(part)
+    new_part = PlateMesh.from_geometry(part)
+    test_mesh = new_part.to_dict()
+    test_mesh_info.append(test_mesh)
+for part in test2:
     new_part = PlateMesh.from_geometry(part)
     test_mesh = new_part.to_dict()
     test_mesh_info.append(test_mesh)

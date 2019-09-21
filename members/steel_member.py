@@ -1,15 +1,25 @@
 import json
 from gusset_design.reference.AISC_shapes_database import AISCShapesDatabase
-from sympy import Point3D
+from compas.geometry import Frame
+from compas.geometry import Point
 
 class SteelMember(object):
 
-    def __init__(self, d=None, tw=None, bf=None, tf=None):
-        self.name = None
+    def __init__(self, name, start_pt, end_pt, frame=None, orientation='strong-axis',
+                 d=None, tw=None, bf=None, tf=None):
+        self.name = name
+        self.start_pt = start_pt
+        self.end_pt = end_pt
+        self.frame = frame
+        self.orientation = orientation
         self.tf = tf
         self.tw = tw
         self.d = d
         self.bf = bf
+
+    @classmethod
+    def from_data(cls, data):
+        steel_member = cls()
 
     @classmethod
     def from_json(cls, filepath):
@@ -21,8 +31,8 @@ class SteelMember(object):
         return steel_member
 
     @classmethod
-    def from_AISC_database(cls, section_name, AISCDatabase):
-        steel_member = cls()
+    def from_AISC_database(cls, section_name, start_pt, end_pt, AISCDatabase):
+        steel_member = cls(section_name, start_pt, end_pt)
         for index, member in AISCDatabase.data.items():
             if member['AISC_Manual_Label'] == section_name:
                 for member, prop in member.items():
@@ -53,7 +63,7 @@ class SteelMember(object):
         for pt in mesh_Point3D:
             mesh_points.append({'x': float(pt.x), 'y': float(pt.y), 'z': float(pt.z)})
         return mesh_points
-        
+       
 
     def x_section_to_mesh(self, plane, length, frame=None):
         # DOES NOT CONSIDER LOCATION IN GLOBAL SPACE
@@ -81,6 +91,29 @@ class SteelMember(object):
                                              wf_pt5.translate(0, length * 0.5, 0)],
                                              self.tf, 'z')
             meshes = [web_pl, flange_pl1, flange_pl2]
+        if plane == 'xy':
+            wf_pt0 = Point3D(0, self.d * 0.5 - self.tw * 0.5, 0)
+            wf_pt1 = Point3D(0, -(self.d * 0.5 - self.tw * 0.5), 0)
+            wf_pt2 = wf_pt0.translate(-self.bf * 0.5, 0, 0)
+            wf_pt3 = wf_pt0.translate(self.bf * 0.5, 0, 0)
+            wf_pt4 = wf_pt1.translate(-self.bf * 0.5, 0, 0)
+            wf_pt5 = wf_pt1.translate(self.bf * 0.5, 0, 0)
+            web_pl = self.extrude_plate([wf_pt0.translate(0, 0, -length * 0.5),
+                                         wf_pt0.translate(0, 0, length * 0.5),
+                                         wf_pt1.translate(0, 0, -length * 0.5),
+                                         wf_pt1.translate(0, 0, length * 0.5)],
+                                         self.tw, 'x')
+            flange_pl1 = self.extrude_plate([wf_pt2.translate(0, 0, -length * 0.5),
+                                             wf_pt2.translate(0, 0, length * 0.5),
+                                             wf_pt3.translate(0, 0, -length * 0.5),
+                                             wf_pt3.translate(0, 0, length * 0.5)],
+                                             self.tf, 'y')
+            flange_pl2 = self.extrude_plate([wf_pt4.translate(0, 0, -length * 0.5),
+                                             wf_pt4.translate(0, 0, length * 0.5),
+                                             wf_pt5.translate(0, 0, -length * 0.5),
+                                             wf_pt5.translate(0, 0, length * 0.5)],
+                                             self.tf, 'y')
+            meshes = [web_pl, flange_pl1, flange_pl2]
         return meshes
 
 
@@ -88,7 +121,8 @@ class SteelMember(object):
 
 
 if __name__ == "__main__":
-    aisc_db = AISCShapesDatabase.from_json('../reference/aisc_shapes_database_v15.json')
-    w40x593 = SteelMember.from_AISC_database(section_name="W40X593", AISCDatabase=aisc_db)
-    test = w40x593.x_section_to_mesh('xz', 10*12)
-    print(test[0])
+    pass
+    # aisc_db = AISCShapesDatabase.from_json('../reference/aisc_shapes_database_v15.json')
+    # w40x593 = SteelMember.from_AISC_database(section_name="W40X593", AISCDatabase=aisc_db)
+    # test = w40x593.x_section_to_mesh('xz', 10*12)
+    # print(test[0])
