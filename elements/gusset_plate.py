@@ -8,6 +8,7 @@ from compas.geometry import Vector
 from compas.geometry import angle_points
 from compas.geometry import translate_points_xy
 from compas.geometry import offset_line
+from compas.geometry import intersection_line_line_xy
 from sympy import Point2D
 from sympy import Line2D
 from sympy import Ray
@@ -34,6 +35,7 @@ class GussetPlate(object):
         self._beam = beam
         self._width = width
         self._height = height
+        self.connection_length = connection_length
         self._offset = 3.
         self._brace_CL = None
 
@@ -169,12 +171,29 @@ class GussetPlate(object):
         brace_vector.scale(200)
         brace_pt = translate_points_xy([self.work_point], brace_vector)[0]
         brace_CL = Line(self.work_point, brace_pt)
-        offset_bcl_column = offset_line(brace_CL, self.brace.d * 0.5)
-        offset_bcl_beam = offset_line(brace_CL, -self.brace.d * 0.5)
-        print(offset_bcl_column)
-        print(offset_bcl_beam)
-        pt3 = [0, 0, 0]
-        pt4 = [1, 0, 0]
+
+        # Brace shoulder lines
+        offset_brace_column = offset_line(brace_CL,
+                                          self.brace.d * 0.5 + self.offset)
+        offset_brace_beam = offset_line(brace_CL,
+                                        -self.brace.d * 0.5 + self.offset)
+
+        # Column offset line
+        offset_column = Line(pt5, Point(pt5[0], 0, 0))
+        offset_beam = Line(pt2, Point(0, pt2[1], 0))
+
+        brace_column_int = intersection_line_line_xy(offset_brace_column,
+                                                     offset_column, tol=1e-6)
+        brace_beam_int = intersection_line_line_xy(offset_brace_beam,
+                                                   offset_beam, tol=1e-6)
+        brace_vector = Vector(sin(radians(self.design_angle)),
+                              cos(radians(self.design_angle)), 0)
+        brace_vector.unitize()
+        brace_vector.scale(self.connection_length)
+
+        pt3 = translate_points_xy([brace_beam_int], brace_vector)[0]
+        pt4 = translate_points_xy([brace_column_int], brace_vector)[0]
+
         if as_dict:
             return {'pt0': pt0, 'pt1': pt1, 'pt2': pt2, 'pt3': pt3,
                     'pt4': pt4, 'pt5': pt5, 'pt6': pt6}
