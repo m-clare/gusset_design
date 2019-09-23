@@ -4,7 +4,7 @@
 - Grid Intersection
 - Level
 - Quadrant + Brace Angle (8 possible)
-- Forces (global) - horizontal and vertical
+- Forces (global) - horizontal and vertical (Axial at an angle)
 
 ## Failure States/Checks
 - Axial force +/-
@@ -27,7 +27,7 @@
 - 3D potential visualization
 - quadrants based on XY plane 
 - cross section of beam/column/brace drawn in x,y (initially)
-- gusset drawn in x, y (initially)
+- gusset drawn in x, y (initially) - DONE
 - transformation to get beam/column/brace to correct orientation/rotation
     - vector normal to plane
     - web orientation
@@ -42,11 +42,11 @@
 - Uniform Force Method
 
 ### Geometric Constraints - Gusset Plates
-- 3 inch offset for edge of gusset from column
-- 3 inch offset for edge of gusset from beam
-- 2 inch offset from column to brace connection
-- 6 inch offset from beam to brace connection
-- 3 inch offset either side of brace (shoulder)
+- 3 inch offset for edge of gusset from column - DONE
+- 3 inch offset for edge of gusset from beam - DONE
+- 2 inch offset from column to brace connection - DONE
+- 6 inch offset from beam to brace connection - DONE
+- 3 inch offset either side of brace (shoulder) - DONE
 
 ### Geometric Constraints - Forces
 - 3 Force Polygons

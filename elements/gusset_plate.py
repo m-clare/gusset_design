@@ -7,6 +7,7 @@ from compas.geometry import Line
 from compas.geometry import Vector
 from compas.geometry import angle_points
 from compas.geometry import translate_points_xy
+from compas.geometry import translate_points
 from compas.geometry import offset_line
 from compas.geometry import intersection_line_line_xy
 from compas.geometry import distance_point_point
@@ -23,10 +24,12 @@ __date__ = 'Sept 16, 2019'
 class GussetPlate(object):
 
     def __init__(self, quadrant, width, height,
-                 connection_length,
+                 connection_length, thickness,
                  brace,
                  column,
-                 beam):
+                 beam,
+                 eb=None,   # eb and ec currently do not work for
+                 ec=None):  # overriding property declaration
         self._quadrant = quadrant
         self._work_point = [0, 0, 0]
         self._brace = brace
@@ -34,7 +37,10 @@ class GussetPlate(object):
         self._beam = beam
         self._width = width
         self._height = height
-        # self._gusset_points = []
+        self._thickness = thickness
+        self._eb = eb
+        self._ec = ec
+        self._gusset_points = []
         self._offset = 3.
         self._brace_CL = None
 
@@ -50,6 +56,10 @@ class GussetPlate(object):
     @property
     def height(self):
         return self._height
+
+    @property
+    def thickness(self):
+        return self._thickness
 
     @property
     def brace(self):
@@ -99,13 +109,22 @@ class GussetPlate(object):
         return self._design_angle
 
     @property
-    def eb(self):  # NEED TO ADD DESIGNATION FOR SETTING EB at START?
+    def eb(self, value=None):  # NEED TO ADD DESIGNATION FOR SETTING EB at START?
                    #  IF WORKPOINT IS NOT AT CL OF BEAM
-        if self._beam.Type == 'HSS':
-            self._eb = self.beam.Ht * 0.5
+        if not value:
+            if self._beam.Type == 'HSS':
+                self._eb = self.beam.Ht * 0.5
+            else:
+                self._eb = self.beam.d * 0.5
         else:
-            self._eb = self.beam.d * 0.5
+            self._eb = value
         return self._eb
+
+    # @eb.setter
+    # def set_eb(self, value=None):
+    #     if not value:
+
+    #     else:
 
     @property
     def ec(self):
@@ -215,6 +234,13 @@ class GussetPlate(object):
 
         # set check to make sure gusset is non concave (force points to line
         # between pt2 and pt5)
+        # Points list to point
+        pt0 = Point(pt0[0], pt0[1], pt0[2])
+        pt1 = Point(pt1[0], pt1[1], pt1[2])
+        pt2 = Point(pt2[0], pt2[1], pt2[2])
+        pt6 = Point(pt6[0], pt6[1], pt6[2])
+        pt5 = Point(pt5[0], pt5[1], pt5[2])
+
         self._gusset_points = [pt0, pt1, pt2, pt3, pt4, pt5, pt6]
         return self._gusset_points
 
@@ -264,7 +290,19 @@ class GussetPlate(object):
             y.append(point[1])
         x.append(x[0])
         y.append(y[0])
-        return x, y
+        data = {'x': x, 'y': y}
+        return data
+
+    def to_local_mesh(self):
+        mesh_Point3D = []
+        mesh_points = []
+        for pt in self.gusset_points:
+            mesh_Point3D.append(translate_points([pt], Vector(0, 0, -0.5 * self.thickness))[0])
+            mesh_Point3D.append(translate_points([pt], Vector(0, 0, 0.5 * self.thickness))[0])
+        print(mesh_Point3D)
+        for pt in mesh_Point3D:
+            mesh_points.append({'x': float(pt[0]), 'y': float(pt[1]), 'z': float(pt[2])})
+        return mesh_points
 
     def to_global_mesh(self):
         pass
