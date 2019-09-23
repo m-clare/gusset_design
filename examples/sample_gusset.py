@@ -15,20 +15,10 @@ print(gusset.brace_angle)
 print(gusset.design_angle)
 force = gusset.calculate_interface_forces(861, as_dict=True)
 
-_, obc, obb, oc, ob, bls = gusset.gusset_points()
+test = gusset.gusset_points()
 print(gusset.gusset_points)
 
 x, y = gusset.to_plotly_xy()
-fig = go.Figure(data=[{'x': x, 'y': y},
-                      {'x': [obc[0][0], obc[1][0]],
-                       'y': [obc[0][1], obc[1][1]]},
-                       {'x': [obb[0][0], obb[1][0]],
-                       'y': [obb[0][1], obb[1][1]]},
-                       {'x': [oc[0][0], oc[1][0]],
-                       'y': [oc[0][1], oc[1][1]]},
-                       {'x': [ob[0][0], ob[1][0]],
-                       'y': [ob[0][1], ob[1][1]]},
-                       {'x': [bls[0][0], bls[1][0]],
-                       'y': [bls[0][1], bls[1][1]]}])
+fig = go.Figure(data=[{'x': x, 'y': y}])
 fig.update_layout(yaxis=dict(scaleanchor='x', scaleratio=1))
 fig.show()

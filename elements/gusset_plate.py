@@ -164,6 +164,7 @@ class GussetPlate(object):
     # Gusset geometry points
 
     def gusset_points(self):
+
         pt0 = list(Point(self.eb, self.ec))
         pt1 = translate_points_xy([pt0], Vector(self.width, 0, 0))[0]
         pt2 = translate_points_xy([pt1], Vector(0, self.offset, 0))[0]
@@ -185,7 +186,7 @@ class GussetPlate(object):
         offset_brace_beam = offset_line(brace_CL,
                                         -(brace_depth * 0.5 + self.offset))
 
-        # Column offset line
+        # Column / Beam offset lines
         offset_column = Line(pt5, Point(pt5[0], 0, 0))
         offset_beam = Line(pt2, Point(0, pt2[1], 0))
 
@@ -202,30 +203,27 @@ class GussetPlate(object):
         beam_brace_pt = translate_points_xy([brace_beam_int], brace_vector)[0]
         column_brace_pt = translate_points_xy([brace_column_int], brace_vector)[0]
 
-        beam_pt_mirrored = mirror_point_line(beam_brace_pt, brace_CL)
-        beam_line_segment = Line(beam_brace_pt, beam_pt_mirrored)
+        def get_brace_points(brace_pt, brace_CL):
+            pt_mirrored  = mirror_point_line(brace_pt, brace_CL)
+            line_segment = Line(brace_pt, pt_mirrored)
+            pt_CL        = intersection_line_line_xy(line_segment, brace_CL)
+            pt_distance  = distance_point_point(self.work_point, pt_CL)
+            return line_segment, pt_distance
 
-        col_pt_mirrored = mirror_point_line(column_brace_pt, brace_CL)
-        col_line_segment = Line(column_brace_pt, col_pt_mirrored)
+        column_line, col_dist = get_brace_points(column_brace_pt, brace_CL)
+        beam_line, beam_dist = get_brace_points(beam_brace_pt, brace_CL)
 
-        col_brace_CL_int = intersection_line_line_xy(col_line_segment, brace_CL)
-        beam_brace_CL_int = intersection_line_line_xy(beam_line_segment, brace_CL)
-
-        col_distance = distance_point_point(self.work_point, col_brace_CL_int)
-        beam_distance = distance_point_point(self.work_point, beam_brace_CL_int)
-
-        if col_distance > beam_distance:
-            pt3 = col_pt_mirrored
-            pt4 = column_brace_pt
+        if col_dist > beam_dist:
+            pt3 = column_line[1]
+            pt4 = column_line[0]
         else:
-            pt3 = beam_brace_pt
-            pt4 = beam_pt_mirrored
-
+            pt3 = beam_line[0]
+            pt4 = beam_line[1]
 
         # set check to make sure gusset is non concave (force points to line
         # between pt2 and pt5)
         self.gusset_points = [pt0, pt1, pt2, pt3, pt4, pt5, pt6]
-        return self.gusset_points, offset_brace_column, offset_brace_beam, offset_column, offset_beam, beam_line_segment
+        return self.gusset_points
 
     # Methods
     def calculate_column_interface_forces(self, brace_force, as_dict=False):
