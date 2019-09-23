@@ -9,9 +9,8 @@ from compas.geometry import angle_points
 from compas.geometry import translate_points_xy
 from compas.geometry import offset_line
 from compas.geometry import intersection_line_line_xy
-from sympy import Point2D
-from sympy import Line2D
-from sympy import Ray
+from compas.geometry import distance_point_point
+from compas.geometry.transformations.transformations import mirror_point_line
 
 __author__ = ['Maryanne Wachter', ]
 __license__ = 'Apache License, Version 2.0'
@@ -35,9 +34,12 @@ class GussetPlate(object):
         self._beam = beam
         self._width = width
         self._height = height
-        self.connection_length = connection_length
+
         self._offset = 3.
         self._brace_CL = None
+
+        # Make these private?
+        self.connection_length = connection_length
 
     # Properties
 
@@ -66,19 +68,22 @@ class GussetPlate(object):
         return self._work_point
 
     @property
-    def offset(self):
+    def offset(self):  # -> Make as input
         return self._offset
-    
-    # @offset.setter
-    # def(self, value):
-    #     self._offset = value
-    #     return self._offset
 
     @property
     def brace_angle(self):
-        angle = angle_points(self.column.end_pt, self.work_point, self.brace.end_pt, deg=True)
-        self._brace_angle = angle
         return self._brace_angle
+
+    @brace_angle.setter
+    def set_brace_angle(self, value=None):
+        if not value:
+            angle = angle_points(self.column.end_pt, self.work_point,
+                                 self.brace.end_pt, deg=True)
+            self._brace_angle = angle
+        else:
+            self._brace_angle = value
+
 
     @property
     def design_angle(self):
@@ -94,7 +99,8 @@ class GussetPlate(object):
         return self._design_angle
 
     @property
-    def eb(self):  # NEED TO ADD DESIGNATION FOR SETTING EB at START? IF WORKPOINT IS NOT AT CL OF BEAM
+    def eb(self):  # NEED TO ADD DESIGNATION FOR SETTING EB at START?
+                   #  IF WORKPOINT IS NOT AT CL OF BEAM
         if self._beam.Type == 'HSS':
             self._eb = self.beam.Ht * 0.5
         else:
@@ -122,7 +128,7 @@ class GussetPlate(object):
     @property
     def K_prime(self):
         self._K_prime = self.alpha_bar * (tan(radians(self.design_angle)) +
-                        self.alpha_bar / self.beta_bar)
+                                          self.alpha_bar / self.beta_bar)
         return self._K_prime
 
     @property
@@ -146,7 +152,7 @@ class GussetPlate(object):
     def alpha(self):
         self._alpha = (self.K_prime * tan(radians(self.design_angle)) +
                        self.K * (self.alpha_bar / self.beta_bar) ** 2.) \
-                      / self.D
+                       / self.D
         return self._alpha
 
     @property
@@ -157,7 +163,7 @@ class GussetPlate(object):
 
     # Gusset geometry points
 
-    def get_gusset_points(self, as_dict=True):
+    def gusset_points(self):
         pt0 = list(Point(self.eb, self.ec))
         pt1 = translate_points_xy([pt0], Vector(self.width, 0, 0))[0]
         pt2 = translate_points_xy([pt1], Vector(0, self.offset, 0))[0]
@@ -173,10 +179,11 @@ class GussetPlate(object):
         brace_CL = Line(self.work_point, brace_pt)
 
         # Brace shoulder lines
+        brace_depth = self.get_brace_depth()
         offset_brace_column = offset_line(brace_CL,
-                                          self.brace.d * 0.5 + self.offset)
+                                          brace_depth * 0.5 + self.offset)
         offset_brace_beam = offset_line(brace_CL,
-                                        -self.brace.d * 0.5 + self.offset)
+                                        -(brace_depth * 0.5 + self.offset))
 
         # Column offset line
         offset_column = Line(pt5, Point(pt5[0], 0, 0))
@@ -191,15 +198,34 @@ class GussetPlate(object):
         brace_vector.unitize()
         brace_vector.scale(self.connection_length)
 
-        pt3 = translate_points_xy([brace_beam_int], brace_vector)[0]
-        pt4 = translate_points_xy([brace_column_int], brace_vector)[0]
+        # Find furthest line segment from origin
+        beam_brace_pt = translate_points_xy([brace_beam_int], brace_vector)[0]
+        column_brace_pt = translate_points_xy([brace_column_int], brace_vector)[0]
 
-        if as_dict:
-            return {'pt0': pt0, 'pt1': pt1, 'pt2': pt2, 'pt3': pt3,
-                    'pt4': pt4, 'pt5': pt5, 'pt6': pt6}
+        beam_pt_mirrored = mirror_point_line(beam_brace_pt, brace_CL)
+        beam_line_segment = Line(beam_brace_pt, beam_pt_mirrored)
+
+        col_pt_mirrored = mirror_point_line(column_brace_pt, brace_CL)
+        col_line_segment = Line(column_brace_pt, col_pt_mirrored)
+
+        col_brace_CL_int = intersection_line_line_xy(col_line_segment, brace_CL)
+        beam_brace_CL_int = intersection_line_line_xy(beam_line_segment, brace_CL)
+
+        col_distance = distance_point_point(self.work_point, col_brace_CL_int)
+        beam_distance = distance_point_point(self.work_point, beam_brace_CL_int)
+
+        if col_distance > beam_distance:
+            pt3 = col_pt_mirrored
+            pt4 = column_brace_pt
         else:
-            raise NotImplementedError
-        # return self._gusset_points
+            pt3 = beam_brace_pt
+            pt4 = beam_pt_mirrored
+
+
+        # set check to make sure gusset is non concave (force points to line
+        # between pt2 and pt5)
+        self.gusset_points = [pt0, pt1, pt2, pt3, pt4, pt5, pt6]
+        return self.gusset_points, offset_brace_column, offset_brace_beam, offset_column, offset_beam, beam_line_segment
 
     # Methods
     def calculate_column_interface_forces(self, brace_force, as_dict=False):
@@ -226,10 +252,31 @@ class GussetPlate(object):
                     'V_b': V_b, 'H_b': H_b, 'M_b': M_b}
         return V_c, H_c, M_c, V_b, H_b, M_b
 
-    def to_mesh(self, plane, normal):
+    def get_brace_depth(self):
+        if self.brace.orientation == 'strong-axis':
+            if self.brace.Type == 'W':
+                return self.brace.d
+            if self.brace.Type == 'HSS':
+                return self.brace.Ht
+        if self.brace.orientation == 'weak-axis':
+            if self.brace.Type == 'W':
+                return self.brace.bf
+            if self.brace.Type == 'HSS':
+                return self.brace.B
+        else:
+            raise ValueError
+
+    def to_plotly_xy(self):
+        x, y = [], []
+        for point in self.gusset_points:
+            x.append(point[0])
+            y.append(point[1])
+        x.append(x[0])
+        y.append(y[0])
+        return x, y
+
+    def to_global_mesh(self):
         pass
-
-
 
 
 if __name__ == "__main__":
