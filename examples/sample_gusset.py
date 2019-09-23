@@ -15,7 +15,7 @@ print(gusset.brace_angle)
 print(gusset.design_angle)
 force = gusset.calculate_interface_forces(861, as_dict=True)
 
-test = gusset.gusset_points()
+# test = gusset.gusset_points()
 print(gusset.gusset_points)
 
 x, y = gusset.to_plotly_xy()

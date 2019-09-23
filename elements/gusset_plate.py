@@ -34,7 +34,7 @@ class GussetPlate(object):
         self._beam = beam
         self._width = width
         self._height = height
-
+        # self._gusset_points = []
         self._offset = 3.
         self._brace_CL = None
 
@@ -162,7 +162,7 @@ class GussetPlate(object):
         return self._r
 
     # Gusset geometry points
-
+    @property
     def gusset_points(self):
 
         pt0 = list(Point(self.eb, self.ec))
@@ -175,43 +175,36 @@ class GussetPlate(object):
         brace_vector = Vector(sin(radians(self.design_angle)),
                               cos(radians(self.design_angle)), 0)
         brace_vector.unitize()
-        brace_vector.scale(200)
+        brace_vector.scale(500)
         brace_pt = translate_points_xy([self.work_point], brace_vector)[0]
         brace_CL = Line(self.work_point, brace_pt)
 
-        # Brace shoulder lines
-        brace_depth = self.get_brace_depth()
-        offset_brace_column = offset_line(brace_CL,
-                                          brace_depth * 0.5 + self.offset)
-        offset_brace_beam = offset_line(brace_CL,
-                                        -(brace_depth * 0.5 + self.offset))
-
-        # Column / Beam offset lines
-        offset_column = Line(pt5, Point(pt5[0], 0, 0))
-        offset_beam = Line(pt2, Point(0, pt2[1], 0))
-
-        brace_column_int = intersection_line_line_xy(offset_brace_column,
-                                                     offset_column, tol=1e-6)
-        brace_beam_int = intersection_line_line_xy(offset_brace_beam,
-                                                   offset_beam, tol=1e-6)
-        brace_vector = Vector(sin(radians(self.design_angle)),
-                              cos(radians(self.design_angle)), 0)
         brace_vector.unitize()
         brace_vector.scale(self.connection_length)
 
-        # Find furthest line segment from origin
-        beam_brace_pt = translate_points_xy([brace_beam_int], brace_vector)[0]
-        column_brace_pt = translate_points_xy([brace_column_int], brace_vector)[0]
+        # Brace shoulder lines
+        brace_depth = self.get_brace_depth()
+        column_offset = brace_depth * 0.5 + self.offset
+        beam_offset = -(brace_depth * 0.5 + self.offset)
+        column_line = Line(pt5, Point(pt5[0], 0, 0))
+        beam_line = Line(pt2, Point(0, pt2[1], 0))
 
-        def get_brace_points(brace_pt, brace_CL):
-            pt_mirrored  = mirror_point_line(brace_pt, brace_CL)
+        def get_brace_points(offset_value, offset_member,
+                             brace_CL, brace_vector):
+            offset_brace = offset_line(brace_CL, offset_value)
+            brace_member_int = intersection_line_line_xy(offset_brace,
+                                                         offset_member)
+            brace_pt = translate_points_xy([brace_member_int], brace_vector)[0]
+            pt_mirrored = mirror_point_line(brace_pt, brace_CL)
             line_segment = Line(brace_pt, pt_mirrored)
-            pt_CL        = intersection_line_line_xy(line_segment, brace_CL)
-            pt_distance  = distance_point_point(self.work_point, pt_CL)
+            pt_CL = intersection_line_line_xy(line_segment, brace_CL)
+            pt_distance = distance_point_point(self.work_point, pt_CL)
             return line_segment, pt_distance
 
-        column_line, col_dist = get_brace_points(column_brace_pt, brace_CL)
-        beam_line, beam_dist = get_brace_points(beam_brace_pt, brace_CL)
+        column_line, col_dist = get_brace_points(column_offset, column_line,
+                                                 brace_CL, brace_vector)
+        beam_line, beam_dist = get_brace_points(beam_offset, beam_line,
+                                                brace_CL, brace_vector)
 
         if col_dist > beam_dist:
             pt3 = column_line[1]
@@ -222,8 +215,8 @@ class GussetPlate(object):
 
         # set check to make sure gusset is non concave (force points to line
         # between pt2 and pt5)
-        self.gusset_points = [pt0, pt1, pt2, pt3, pt4, pt5, pt6]
-        return self.gusset_points
+        self._gusset_points = [pt0, pt1, pt2, pt3, pt4, pt5, pt6]
+        return self._gusset_points
 
     # Methods
     def calculate_column_interface_forces(self, brace_force, as_dict=False):
