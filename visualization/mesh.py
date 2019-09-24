@@ -31,9 +31,9 @@ class PlateMesh(object):
         y = []
         z = []
         for point in points:
-            x.append(point['x'])
-            y.append(point['y'])
-            z.append(point['z'])
+            x.append(point[0])
+            y.append(point[1])
+            z.append(point[2])
         plate.x = x
         plate.y = y
         plate.z = z

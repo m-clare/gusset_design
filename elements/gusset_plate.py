@@ -293,7 +293,7 @@ class GussetPlate(object):
         data = {'x': x, 'y': y}
         return data
 
-    def to_local_mesh(self):
+    def to_local_mesh_xy(self):
         mesh_Point3D = []
         mesh_points = []
         for pt in self.gusset_points:
