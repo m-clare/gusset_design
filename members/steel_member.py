@@ -30,7 +30,7 @@ class SteelMember(object):
 
     @frame.setter
     def frame(self, value):
-        if value == None:
+        if value is None:
             self._frame = Frame.worldXY()
         else:
             point = value[0]
