@@ -2,9 +2,14 @@ from numpy import tan
 from numpy import sin
 from numpy import cos
 from numpy import radians
+
+# Compas classes
 from compas.geometry import Point
+from compas.geometry import Frame
 from compas.geometry import Line
 from compas.geometry import Vector
+
+# Compas methods
 from compas.geometry import angle_points
 from compas.geometry import translate_points_xy
 from compas.geometry import translate_points
@@ -12,6 +17,7 @@ from compas.geometry import offset_line
 from compas.geometry import intersection_line_line_xy
 from compas.geometry import distance_point_point
 from compas.geometry.transformations.transformations import mirror_point_line
+from compas.geometry.xforms.transformation import Transformation
 
 __author__ = ['Maryanne Wachter', ]
 __license__ = 'Apache License, Version 2.0'
@@ -28,6 +34,8 @@ class GussetPlate(object):
                  brace,
                  column,
                  beam,
+                 brace_angle=None,
+                 frame=None,
                  eb=None,   # eb and ec currently do not work for
                  ec=None):  # overriding property declaration
         self._quadrant = quadrant
@@ -35,6 +43,7 @@ class GussetPlate(object):
         self._brace = brace
         self._column = column
         self._beam = beam
+        self.frame = frame
         self._width = width
         self._height = height
         self._thickness = thickness
@@ -43,6 +52,7 @@ class GussetPlate(object):
         self._gusset_points = []
         self._offset = 3.
         self._brace_CL = None
+        self._brace_angle = brace_angle
 
         # Make these private?
         self.connection_length = connection_length
@@ -86,14 +96,13 @@ class GussetPlate(object):
         return self._brace_angle
 
     @brace_angle.setter
-    def set_brace_angle(self, value=None):
-        if not value:
-            angle = angle_points(self.column.end_pt, self.work_point,
-                                 self.brace.end_pt, deg=True)
-            self._brace_angle = angle
-        else:
+    def brace_angle(self, value):
+        if value is not None:
             self._brace_angle = value
-
+        else:
+            self._brace_angle = angle_points(self.column.end_pt,
+                                             self.work_point,
+                                             self.brace.end_pt, deg=True)
 
     @property
     def design_angle(self):
@@ -107,6 +116,18 @@ class GussetPlate(object):
         else:
             self._design_angle = self.brace_angle
         return self._design_angle
+
+    @property
+    def frame(self):
+        return self._frame
+
+    @frame.setter
+    def frame(self, value):
+        if value is not None:
+            self._frame = Frame(value[0], value[1], value[2])
+        else:
+            brace_frame = self.brace.frame
+            self._frame = brace_frame
 
     @property
     def eb(self, value=None):  # NEED TO ADD DESIGNATION FOR SETTING EB at START?
@@ -293,19 +314,30 @@ class GussetPlate(object):
         data = {'x': x, 'y': y}
         return data
 
-    def to_local_mesh_xy(self):
+    def to_local_geometry_xy(self):
         mesh_Point3D = []
         mesh_points = []
         for pt in self.gusset_points:
             mesh_Point3D.append(translate_points([pt], Vector(0, 0, -0.5 * self.thickness))[0])
             mesh_Point3D.append(translate_points([pt], Vector(0, 0, 0.5 * self.thickness))[0])
-        print(mesh_Point3D)
         for pt in mesh_Point3D:
             mesh_points.append({'x': float(pt[0]), 'y': float(pt[1]), 'z': float(pt[2])})
-        return mesh_points
+        return [mesh_points]
 
-    def to_global_mesh(self):
-        pass
+    def to_global_geometry(self, world_frame=Frame.worldXY()):
+        geometry = self.to_local_geometry_xy()
+        transformed_geometry = []
+        gusset_local_frame = Frame([0, 0, 0], [1, 0, 0], [0, 1, 0])
+        T1 = Transformation.from_frame_to_frame(gusset_local_frame, gusset_local_frame)
+        T2 = Transformation.from_frame_to_frame(self.frame, world_frame)
+        for part in geometry:
+            transformed_part = []
+            for point in part:
+                p_point = Point(point['x'], point['y'], point['z'])
+                transformed_part.append(p_point.transformed(T1))
+        transformed_geometry.append(transformed_part)
+        print(len(transformed_geometry))
+        return transformed_geometry
 
 
 if __name__ == "__main__":
