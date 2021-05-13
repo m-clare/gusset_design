@@ -24,7 +24,7 @@ class GussetNode(StructuralNode):
         self.braces = braces
         self.column = column
         self.gussets = gussets
-        self.AISC_db = AISCShapesDatabase.from_json('../reference/aisc_shapes_database_v15.json')
+        self.AISC_db = AISCShapesDatabase.from_json('/Users/maryannewachter/workspaces/current/gusset_design/reference/aisc_shapes_database_v15.json')
 
     @classmethod
     def from_json(cls, filepath):
@@ -52,10 +52,54 @@ class GussetNode(StructuralNode):
                                 name, gusset_node.AISC_db, data=values))
         return gusset_node
 
+    @classmethod
+    def to_json():
+        pass
+
+    def add_beam(self, beam):
+        self.beams.append[beam]
+        return
+
+    def add_column(self, column):
+        pass
+
+    def add_brace(self, brace):
+        pass
+
     def add_gusset(self, beam, brace, column):
         gusset = GussetPlate(beam, brace, column)
         self.gussets.append[gusset]
 
+    def add_gusset_from_json(cls, filepath):
+        # gusset =
+        pass 
+
+    def update_gusset_l1(self, gusset, l1):
+        pass
+
+    def update_gusset_l2(self, gusset, l2):
+        pass
+
+    def update_gusset_thickness(self, gusset, thickness):
+        pass
+
+
+    def add_gusset_from_json(self, filepath):
+        pass
+
+
+    def check_connection_framing_compatibility():
+        '''
+        Check quadrants of gusset node to ensure that all framing columms
+        and beams are compatible
+        '''
+        pass
+
+    def check_gusset_compatibility():
+        '''
+        Check thickness of top and bottom gusset framing into column and take largest thickness
+        '''
+        pass
 
     def to_meshes(self):
         component_types = [self.beams, self.column, self.braces]
@@ -77,3 +121,5 @@ if __name__ == "__main__":
     fig = go.Figure(data=meshes)
     fig.update_layout(scene_aspectmode='data')
     fig.show()
+
+    

@@ -16,8 +16,8 @@ from compas.geometry import translate_points
 from compas.geometry import offset_line
 from compas.geometry import intersection_line_line_xy
 from compas.geometry import distance_point_point
-from compas.geometry import mirror_points_line
-from compas.geometry import Transformation
+from compas.geometry.transformations.transformations import mirror_point_line
+from compas.geometry.xforms.transformation import Transformation
 
 __author__ = ['Maryanne Wachter', ]
 __license__ = 'Apache License, Version 2.0'
@@ -140,6 +140,12 @@ class GussetPlate(object):
             self._eb = value
         return self._eb
 
+    # @eb.setter
+    # def set_eb(self, value=None):
+    #     if not value:
+
+    #     else:
+
     @property
     def ec(self):
         if self.column.orientation == 'strong-axis':
@@ -201,6 +207,8 @@ class GussetPlate(object):
         pt6 = translate_points_xy([pt0], Vector(0, self.height, 0))[0]
         pt5 = translate_points_xy([pt6], Vector(self.offset, 0, 0))[0]
 
+
+
     # Gusset geometry points
     @property
     def gusset_points(self):
@@ -252,7 +260,7 @@ class GussetPlate(object):
             brace_member_int = intersection_line_line_xy(offset_brace,
                                                          offset_member)
             brace_pt = translate_points_xy([brace_member_int], brace_vector)[0]
-            pt_mirrored = mirror_points_line([brace_pt], brace_CL)
+            pt_mirrored = mirror_point_line(brace_pt, brace_CL)
             line_segment = Line(brace_pt, pt_mirrored)
             pt_CL = intersection_line_line_xy(line_segment, brace_CL)
             pt_distance = distance_point_point(self.work_point, pt_CL)
@@ -267,6 +275,7 @@ class GussetPlate(object):
         self.gusset_lines.append(os_brace_beam)
         self.gusset_lines.append(os_column)
         self.gusset_lines.append(os_beam)
+        
         self.gusset_lines.append(column_line)
         self.gusset_lines.append(beam_line)
 

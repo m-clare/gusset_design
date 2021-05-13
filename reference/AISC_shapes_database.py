@@ -1,6 +1,5 @@
 import json
 
-
 class AISCShapesDatabase(object):
 
     def __init__(self, data):
@@ -22,10 +21,3 @@ class AISCShapesDatabase(object):
             if value['AISC_Manual_Label'] == section_size:
                 return value['bf']
 
-
-if __name__ == "__main__":
-    test = AISCShapesDatabase.from_json('aisc_shapes_database_v15.json')
-    value = test.get_section_depth('W44X230')
-    print(value)
-    value = test.get_flange_width('W44X230')
-    print(value)

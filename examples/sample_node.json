@@ -7,7 +7,7 @@
  "column": {"W14X370":
     {"start_pt": [0, 0, -100],
      "end_pt": [0, 0, 100],
-     "length": 200,
+     "length": 100,
      "name": "W14X370",
      "frame": {"euler_angles": [0, 0, 90], "point": [0, 0, 100]}
     }},
@@ -15,6 +15,7 @@
     {"start_pt": [0, 0, 0],
      "end_pt": [100, 100, 0],
      "name": "W14X193",
-     "frame": {"euler_angles": [37.6, 0, 0]}
+     "frame": {"euler_angles": [37.0, 0, 0]},
+     "connection_length": 18.0
     }}
  }

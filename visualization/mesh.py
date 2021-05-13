@@ -79,10 +79,6 @@ class PlateMesh(object):
                     x=self.x, y=self.y, z=self.z,
                     alphahull=self.alphahull, color=self.color)
 
-    def add_to_meshes(self, meshes):
-        meshes.append(self.to_dict())
-        return meshes
-
 
 
 

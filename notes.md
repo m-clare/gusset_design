@@ -38,7 +38,7 @@
 
 ### Design Guide Notes
 - KISS Method - all vertical force goes to column/gusset interface, all horizontal force goes to beam/gusset interface - not the most economical
-- Parallel Force Method - 
+- Parallel Force Method
 - Uniform Force Method
 
 ### Geometric Constraints - Gusset Plates

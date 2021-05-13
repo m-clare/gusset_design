@@ -4,7 +4,7 @@ from compas.geometry import Frame
 from compas.geometry import Point
 from compas.geometry import Vector
 from compas.geometry import translate_points
-from compas.geometry.xforms.transformation import Transformation
+from compas.geometry import Transformation
 from numpy import radians
 
 
@@ -13,12 +13,14 @@ class SteelMember(object):
     def __init__(self, section_name, start_pt=None, end_pt=None,
                  frame=None,
                  length=None,
+                 connection_length=None,
                  orientation='strong-axis',
                  ):
         self.section_name = section_name
         self.start_pt = start_pt
         self.end_pt = end_pt
         self._frame = frame
+        self.connection_length = connection_length
         self.length = length
         self.orientation = orientation
 
@@ -137,7 +139,7 @@ class SteelMember(object):
         c1, c3 = translate_points([pt0, pt1], Vector(0, 0, length))
 
         return [Point(*c0), Point(*c1), Point(*c2), Point(*c3)]
-       
+
     def to_local_geometry_xy(self):
         if self.Type == 'W':
             # wf == 'wireframe - center line of steel element, with origin at middle'
@@ -188,6 +190,3 @@ if __name__ == "__main__":
     beam = SteelMember.from_AISC_database("W24X62", aisc_db, data=data['beams']["W24X62"])
     column = SteelMember.from_AISC_database("W14X370", aisc_db, data=data['column']['W14X370'])
     brace = SteelMember.from_AISC_database("W14X193", aisc_db, data=data['braces']['W14X193'])
-    # test = GussetNode.from_json('../examples/sample_node.json')
-    # for beam in test.beams:
-    #     print(beam.__dict__)
