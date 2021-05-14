@@ -45,7 +45,7 @@ class PlotlyLineXY(object):
     @dash.setter
     def dash(self, value):
         self._dash = value
-    
+
     @property
     def color(self):
         return self._color
@@ -80,4 +80,3 @@ class PlotlyLineXY(object):
         return dict(type=self.type,
                     x=self.x, y=self.y,
                     line=self.line)
-    

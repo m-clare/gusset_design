@@ -178,15 +178,3 @@ class SteelMember(object):
                 transformed_part.append(p_point.transformed(T))
             transformed_geometry.append(transformed_part)
         return transformed_geometry
-
-
-if __name__ == "__main__":
-    from gusset_design.reference.AISC_shapes_database import AISCShapesDatabase
-    import json
-
-    aisc_db = AISCShapesDatabase.from_json('../reference/aisc_shapes_database_v15.json')
-    with open('../examples/sample_node.json', 'r') as fp:
-        data = json.load(fp)
-    beam = SteelMember.from_AISC_database("W24X62", aisc_db, data=data['beams']["W24X62"])
-    column = SteelMember.from_AISC_database("W14X370", aisc_db, data=data['column']['W14X370'])
-    brace = SteelMember.from_AISC_database("W14X193", aisc_db, data=data['braces']['W14X193'])

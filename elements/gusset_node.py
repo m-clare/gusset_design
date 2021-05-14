@@ -1,10 +1,10 @@
 from gusset_design.reference.AISC_shapes_database import AISCShapesDatabase
 from gusset_design.visualization.mesh import PlateMesh
 from gusset_design.elements.steel_member import SteelMember
-from gusset_design.elements.structural_node import StructuralNode
 from gusset_design.elements.gusset_plate import GussetPlate
 import plotly.graph_objs as go
 
+import os 
 import json
 
 __author__ = ['Maryanne Wachter', ]
@@ -15,16 +15,21 @@ __status__ = 'Development'
 __date__ = 'Sept 16, 2019'
 
 
-class GussetNode(StructuralNode):
+path = os.path.abspath(__file__)
+dir_path = os.path.dirname(path)
+
+class GussetNode(object):
 
     def __init__(self, beams=[], braces=[], column=[], gussets=[]):
         super(GussetNode, self).__init__()
-
+        self.x = 0
+        self.y = 0
+        self.z = 0
         self.beams = beams
         self.braces = braces
         self.column = column
         self.gussets = gussets
-        self.AISC_db = AISCShapesDatabase.from_json('../reference/aisc_shapes_database_v15.json')
+        self.AISC_db = AISCShapesDatabase.from_json(dir_path + '/../reference/aisc_shapes_database_v15.json')
 
     @classmethod
     def from_json(cls, filepath):
@@ -67,13 +72,3 @@ class GussetNode(StructuralNode):
                     new_mesh = PlateMesh.from_geometry(part, to_dict=True)
                     member_meshes.append(new_mesh)
         return member_meshes
-
-if __name__ == "__main__":
-    test = GussetNode.from_json('../examples/sample_node.json')
-    print(test.braces[0].Type)
-    print(test.beams[0].Type)
-    print(test.column[0].Type)
-    meshes = test.to_meshes()
-    fig = go.Figure(data=meshes)
-    fig.update_layout(scene_aspectmode='data')
-    fig.show()

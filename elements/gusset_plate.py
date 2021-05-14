@@ -277,8 +277,8 @@ class GussetPlate(object):
             pt3 = beam_line[0]
             pt4 = beam_line[1]
 
-        # set check to make sure gusset is non concave (force points to line
-        # between pt2 and pt5)
+        # TODO: set check to make sure gusset is non concave
+        # (force points to line between pt2 and pt5)
         # Points list to point
         pt0 = Point(pt0[0], pt0[1], pt0[2])
         pt1 = Point(pt1[0], pt1[1], pt1[2])
@@ -361,6 +361,7 @@ class GussetPlate(object):
         gusset_local_frame = Frame([0, 0, 0], [1, 0, 0], [0, 1, 0])
         T1 = Transformation.from_frame_to_frame(gusset_local_frame, self.frame)
         T2 = Transformation.from_frame_to_frame(self.frame, world_frame)
+        transformed_part = [] # default
         for part in geometry:
             transformed_part = []
             for point in part:
