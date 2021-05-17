@@ -80,9 +80,13 @@ class SteelMember(object):
         else:
             self._length = 100
 
+    # TODO: cleanup duplicate code
     @classmethod
     def from_data(cls, data):
         steel_member = cls()
+        for k, v in data.items():
+            setattr(steel_member, k, v)
+        return steel_member
 
     @classmethod
     def from_json(cls, filepath):

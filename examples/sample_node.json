@@ -16,6 +16,7 @@
      "end_pt": [100, 100, 0],
      "name": "W14X193",
      "frame": {"euler_angles": [37.0, 0, 0]},
-     "connection_length": 18.0
+     "connection_length": 18.0,
+     "brace_angle": 37.0
     }}
  }

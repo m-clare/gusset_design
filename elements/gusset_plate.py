@@ -131,9 +131,9 @@ class GussetPlate(object):
 
     @property
     def eb(self, value=None):
-    '''
-    Current setup is for CL of beam for handling eb
-    '''
+        '''
+        Current setup is for CL of beam for handling eb
+        '''
         if not value:
             if self._beam.Type == 'HSS':
                 self._eb = self.beam.Ht * 0.5
@@ -207,11 +207,10 @@ class GussetPlate(object):
     # Gusset geometry points
     @property
     def gusset_points(self):
-    '''
-    Gusset points defined in Q1 of XY plane: all transformation done wrt
-    this system.
-    '''
-
+        '''
+        Gusset points defined in Q1 of XY plane: all transformation done wrt
+        this system.
+        '''
         pt0 = list(Point(self.eb, self.ec))
         pt1 = translate_points_xy([pt0], Vector(self.width, 0, 0))[0]
         pt2 = translate_points_xy([pt1], Vector(0, self.offset, 0))[0]
@@ -298,10 +297,10 @@ class GussetPlate(object):
 
     # Methods
     def calculate_column_interface_forces(self, brace_force, as_dict=False):
-    '''
-    Column interface forces assume moments at interfaces per
-    Analysis of Existing Diagonal Brace Connections AISC Steel Manual 13-10
-    '''
+        '''
+        Column interface forces assume moments at interfaces per
+        Analysis of Existing Diagonal Brace Connections AISC Steel Manual 13-10
+        '''
         V_c = self.beta * brace_force / self.r
         H_c = self.ec * brace_force / self.r
         M_c = H_c * (self.beta - self.beta_bar)
@@ -310,10 +309,10 @@ class GussetPlate(object):
         return V_c, H_c, M_c
 
     def calculate_beam_interface_forces(self, brace_force, as_dict=False):
-    '''
-    Beam interface forces assume moments at interfaces per
-    Analysis of Existing Diagonal Brace Connections AISC Steel Manual 13-10
-    '''
+        '''
+        Beam interface forces assume moments at interfaces per
+        Analysis of Existing Diagonal Brace Connections AISC Steel Manual 13-10
+        '''
         V_b = self.eb * brace_force / self.r
         H_b = self.alpha * brace_force / self.r
         M_b = V_b * (self.alpha - self.alpha_bar)
