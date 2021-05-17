@@ -107,6 +107,7 @@ class GussetPlate(object):
     def design_angle(self):
         '''
         Adjust brace angle for gusset plates in quadrant iii and iv
+        Brace angle is measured from column line to brace line < 90 degrees
         '''
         if self.brace_angle > 180 or self.brace_angle < 0:
             raise ValueError
@@ -129,8 +130,10 @@ class GussetPlate(object):
             self._frame = brace_frame
 
     @property
-    def eb(self, value=None):  # NEED TO ADD DESIGNATION FOR SETTING EB at START?
-                   #  IF WORKPOINT IS NOT AT CL OF BEAM
+    def eb(self, value=None):
+    '''
+    Current setup is for CL of beam for handling eb
+    '''
         if not value:
             if self._beam.Type == 'HSS':
                 self._eb = self.beam.Ht * 0.5
@@ -204,6 +207,10 @@ class GussetPlate(object):
     # Gusset geometry points
     @property
     def gusset_points(self):
+    '''
+    Gusset points defined in Q1 of XY plane: all transformation done wrt
+    this system.
+    '''
 
         pt0 = list(Point(self.eb, self.ec))
         pt1 = translate_points_xy([pt0], Vector(self.width, 0, 0))[0]
@@ -278,7 +285,7 @@ class GussetPlate(object):
             pt4 = beam_line[1]
 
         # TODO: set check to make sure gusset is non concave
-        # (force points to line between pt2 and pt5)
+        # (i.e. force points to line between pt2 and pt5)
         # Points list to point
         pt0 = Point(pt0[0], pt0[1], pt0[2])
         pt1 = Point(pt1[0], pt1[1], pt1[2])
@@ -291,6 +298,10 @@ class GussetPlate(object):
 
     # Methods
     def calculate_column_interface_forces(self, brace_force, as_dict=False):
+    '''
+    Column interface forces assume moments at interfaces per
+    Analysis of Existing Diagonal Brace Connections AISC Steel Manual 13-10
+    '''
         V_c = self.beta * brace_force / self.r
         H_c = self.ec * brace_force / self.r
         M_c = H_c * (self.beta - self.beta_bar)
@@ -299,6 +310,10 @@ class GussetPlate(object):
         return V_c, H_c, M_c
 
     def calculate_beam_interface_forces(self, brace_force, as_dict=False):
+    '''
+    Beam interface forces assume moments at interfaces per
+    Analysis of Existing Diagonal Brace Connections AISC Steel Manual 13-10
+    '''
         V_b = self.eb * brace_force / self.r
         H_b = self.alpha * brace_force / self.r
         M_b = V_b * (self.alpha - self.alpha_bar)
@@ -369,8 +384,3 @@ class GussetPlate(object):
                 transformed_part.append(p_point.transformed(T1))
         transformed_geometry.append(transformed_part)
         return transformed_geometry
-
-
-if __name__ == "__main__":
-    pass
-

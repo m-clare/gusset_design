@@ -61,6 +61,9 @@ class GussetNode(object):
         gusset = GussetPlate(beam, brace, column)
         self.gussets.append[gusset]
 
+    def get_brace_angle(self, brace, column):
+        pass
+
 
     def to_meshes(self):
         component_types = [self.beams, self.column, self.braces]
